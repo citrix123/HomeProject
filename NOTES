@@ -1,0 +1,12 @@
+Project : Home Robot
+
+Requirements:
+1. Lock and Unlock Door.
+	a. Status Of Door
+	b. History of Door Locks and Unlocks
+2. Light ON and OFF
+	a. Lights Status
+	b. Power Status
+3. ON Allout and OFF Allout
+	a. Status Of Allout
+	b. ReFill Status
