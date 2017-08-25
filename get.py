@@ -1,10 +1,14 @@
 import numpy as np
 import cv2
 import time
+import dlib
 
 path = '/home/citrix/Documents/Projects/opencv/data/haarcascades/'
 face_cascade = cv2.CascadeClassifier(path + 'haarcascade_frontalface_default.xml')
 #eye_cascade = cv2.CascadeClassifier(path + 'haarcascade_eye.xml')
+detector = dlib.get_frontal_face_detector() #Face detector
+predictor = dlib.shape_predictor("res/shape_predictor_68_face_landmarks.dat") #Landmark identifier. Set the filename to whatever you named the down
+
 
 def initVideoDevice(capDevice):
     return cv2.VideoCapture(1)
@@ -32,10 +36,24 @@ def renderCamera(cap):
 	    roi_gray = gray[y:y+h, x:x+w]
 	    roi_color = frame[y:y+h, x:x+w]
 	    showFrame('crop', roi_gray)
-        
+	    getFacialCircles(roi_gray, frame)
+
 	showFrame('img',frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+
+def getFacialCircles(imgObj, frame):
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    clahe_image = clahe.apply(imgObj)
+    detections = detector(clahe_image, 1)
+    
+    for k,d in enumerate(detections): #For each detected face    
+	shape = predictor(clahe_image, d) #Get coordinates
+	for i in range(1,68): #There are 68 landmark points on each face
+	    cv2.circle(imgObj, (shape.part(i).x, shape.part(i).y), 1, (0,0,255), thickness=2) #For each point, draw a red circle with thickness2 on the original frame
+    showFrame("FacialCircles", imgObj)
+
 
 def showFrame(name , frameObj):
     cv2.imshow(name, frameObj)
@@ -51,4 +69,4 @@ def main(device):
     renderCamera(initVideoDevice(0))
 
 if __name__ == '__main__':
-    main(0)
+    main(1)
