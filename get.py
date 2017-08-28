@@ -8,6 +8,7 @@ face_cascade = cv2.CascadeClassifier(path + 'haarcascade_frontalface_default.xml
 #eye_cascade = cv2.CascadeClassifier(path + 'haarcascade_eye.xml')
 detector = dlib.get_frontal_face_detector() #Face detector
 predictor = dlib.shape_predictor("res/shape_predictor_68_face_landmarks.dat") #Landmark identifier. Set the filename to whatever you named the down
+count = 0
 
 
 def initVideoDevice(capDevice):
@@ -15,6 +16,8 @@ def initVideoDevice(capDevice):
 
 
 def renderCamera(cap):
+    name = ""
+    train = 0
     while(True):
         # Capture frame-by-frame
         ret, frame = cap.read()
@@ -34,14 +37,28 @@ def renderCamera(cap):
 	for (x,y,w,h) in faces:
 	    cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 	    roi_gray = gray[y:y+h, x:x+w]
+	    roi_img = frame[y:y+h, x:x+w] #RGB image
 	    roi_color = frame[y:y+h, x:x+w]
-	    showFrame('crop', roi_gray)
+	    showFrame('crop', roi_img)
+	    if train == 1:
+		saveImages(roi_img, name)
+	
 	    getFacialCircles(roi_gray, frame)
 
 	showFrame('img',frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+	
+	k = cv2.waitKey(1)
+	print k
+        if k & 0xFF == ord('q'):
             break
-
+	elif k & 0xFF == ord('t'):
+	    print "Pressed T"
+	    name = raw_input("What is your Name?")
+	    train = 1
+	elif k & 0xFF == ord('s'):
+	    train = 0
+	    print "Taining Stopped"
+	
 
 def getFacialCircles(imgObj, frame):
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
@@ -63,6 +80,15 @@ def destroyDevice(arg):
     # When everything done, release the capture
     cap.release()
     cv2.destroyAllWindows()
+
+
+def saveImages(imgObj, Name):
+    global count
+    count = count+1
+    path = "./Images/"
+    Name = path + "/" + Name + "_" + str(count) + ".jpg"
+    print Name
+    cv2.imwrite(Name, imgObj)
 
 
 def main(device):
